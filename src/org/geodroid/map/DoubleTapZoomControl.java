@@ -1,7 +1,7 @@
 package org.geodroid.map;
 
 import org.jeo.geom.Envelopes;
-import org.jeo.map.Map;
+import org.jeo.map.Viewport;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
@@ -37,14 +37,14 @@ public class DoubleTapZoomControl implements MapControl {
         switch(ev.getAction()) {
         case MotionEvent.ACTION_DOWN:
             if (first != null && isDoubleTap(first, ev)) {
-                mapView.getViewport().scale(0.5f, ev.getX(), ev.getY());
+                mapView.getWindow().scale(0.5f, ev.getX(), ev.getY());
                 mapView.invalidate();
     
                 Coordinate focus = 
                     mapView.getTransform().getCanvasToWorld().map(new PointF(ev.getX(), ev.getY()));
 
-                Map map = mapView.getMap();
-                map.setBounds(Envelopes.scale(map.getBounds(), 0.5, focus));
+                Viewport view = mapView.getViewport();
+                view.zoomto(Envelopes.scale(view.getBounds(), 0.5, focus));
 
                 first = null;
             }

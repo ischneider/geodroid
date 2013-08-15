@@ -9,6 +9,7 @@ import org.jeo.data.Dataset;
 import org.jeo.map.Layer;
 import org.jeo.map.Map;
 import org.jeo.map.Style;
+import org.jeo.map.Viewport;
 import org.osgeo.proj4j.CoordinateReferenceSystem;
 
 import android.content.Context;
@@ -27,13 +28,14 @@ import com.vividsolutions.jts.geom.Envelope;
  *  
  * @author Justin Deoliveira, OpenGeo
  */
-public class MapView extends View implements Map.Listener {
+public class MapView extends View implements Viewport.Listener, Map.Listener {
 
     Map map;
+    Viewport viewport;
     TransformPipeline tx;
 
     Bitmap image;
-    Viewport viewport;
+    Window window;
 
     List<MapControl> controls;
     RenderWorker renderWorker;
@@ -46,10 +48,11 @@ public class MapView extends View implements Map.Listener {
         super(context);
 
         this.map = map;
-        this.map.bind(this);
+        this.viewport = map.getView().clone();
+        this.viewport.bind(this);
 
-        tx = new TransformPipeline(map);
-        viewport = new Viewport();
+        tx = new TransformPipeline(viewport);
+        window = new Window();
 
         controls = 
             Arrays.asList(new PanControl(), new DoubleTapZoomControl(), new PinchZoomControl());
@@ -72,12 +75,16 @@ public class MapView extends View implements Map.Listener {
         return viewport;
     }
 
+    public Window getWindow() {
+        return window;
+    }
+
     public TransformPipeline getTransform() {
         return tx;
     }
 
     public void redraw() {
-        renderWorker.submit(new Map(map));
+        renderWorker.submit(viewport.clone());
     }
 
     public void addLayers(List<Dataset> datasets) {
@@ -89,8 +96,8 @@ public class MapView extends View implements Map.Listener {
             if (map.getLayers().isEmpty()) {
                 Dataset first = datasets.iterator().next();
 
-                map.setBounds(first.bounds());
-                map.setCRS(first.getCRS());
+                viewport.setBounds(first.bounds());
+                viewport.setCRS(first.getCRS());
             }
     
             for (Dataset data : datasets) {
@@ -109,7 +116,7 @@ public class MapView extends View implements Map.Listener {
             @Override
             public void run() {
                 MapView.this.image = img;
-                viewport.reinit();
+                window.reinit();
                 invalidate();
             }
         });
@@ -132,32 +139,32 @@ public class MapView extends View implements Map.Listener {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         image = Bitmap.createBitmap(w, h, Bitmap.Config.ALPHA_8);
-        viewport.resize(w,  h);
-        map.setSize(w, h);
+        window.resize(w,  h);
+        viewport.resize(w, h);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        canvas.drawBitmap(image, viewport.getWindow(), viewport.getCanvas(), new Paint());
+        canvas.drawBitmap(image, window.getWindow(), window.getCanvas(), new Paint());
     }
 
     @Override
-    public void onBoundsChanged(Map map, Envelope bounds, Envelope old) {
+    public void onBoundsChanged(Viewport map, Envelope bounds, Envelope old) {
         redraw();
     }
 
     @Override
-    public void onSizeChanged(Map map, int width, int height, int oldWidth, int oldHeight) {
+    public void onSizeChanged(Viewport map, int width, int height, int oldWidth, int oldHeight) {
+        redraw();
+    }
+
+    @Override
+    public void onCRSChanged(Viewport map, CoordinateReferenceSystem crs, CoordinateReferenceSystem old) {
         redraw();
     }
 
     @Override
     public void onStyleChanged(Map map, Style style, Style old) {
-        redraw();
-    }
-
-    @Override
-    public void onCRSChanged(Map map, CoordinateReferenceSystem crs, CoordinateReferenceSystem old) {
         redraw();
     }
 

@@ -1,7 +1,7 @@
 package org.geodroid.map;
 
 import org.jeo.geom.Envelopes;
-import org.jeo.map.Map;
+import org.jeo.map.Viewport;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
@@ -37,7 +37,7 @@ public class PanControl implements MapControl {
                 PointF end = new PointF(ev.getX(), ev.getY());
 
                 // use negative of end - start
-                mapView.getViewport().translate(start.x - end.x, start.y - end.y);
+                mapView.getWindow().translate(start.x - end.x, start.y - end.y);
                 mapView.invalidate();
 
                 Coordinate c1 = mapView.getTransform().getCanvasToWorld().map(start);
@@ -49,8 +49,8 @@ public class PanControl implements MapControl {
                 double dx = c1.x - c2.x;
                 double dy = c1.y - c2.y;
 
-                Map map = mapView.getMap();
-                map.setBounds(Envelopes.translate(map.getBounds(), dx, dy));
+                Viewport view = mapView.getViewport();
+                view.zoomto(Envelopes.translate(view.getBounds(), dx, dy));
                 return true;
         }
 

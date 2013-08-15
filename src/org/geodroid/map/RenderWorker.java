@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jeo.android.graphics.Renderer;
 import org.jeo.map.Map;
+import org.jeo.map.Viewport;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -21,17 +22,17 @@ import android.util.Log;
 class RenderWorker {
 
     MapView mapView;
-    ConcurrentLinkedQueue<Map> tasks;
+    ConcurrentLinkedQueue<Viewport> tasks;
     ScheduledExecutorService executor;
 
     RenderWorker(MapView mapView) {
         this.mapView = mapView;
-        tasks = new ConcurrentLinkedQueue<Map>(); 
+        tasks = new ConcurrentLinkedQueue<Viewport>(); 
         executor = Executors.newSingleThreadScheduledExecutor();
     }
 
-    public void submit(Map map) {
-        tasks.add(map);
+    public void submit(Viewport view) {
+        tasks.add(view);
         executor.schedule(new RenderJob(), 100, TimeUnit.MILLISECONDS);
     }
 
@@ -45,8 +46,8 @@ class RenderWorker {
         public void run() {
             try {
                 // grab the next map to render
-                Map map = tasks.poll();
-                if (map == null) {
+                Viewport view = tasks.poll();
+                if (view == null) {
                     return;
                 }
     
@@ -56,14 +57,14 @@ class RenderWorker {
                 }
     
                 Log.d("renderWorker", "rendering");
-                Debug.startMethodTracing("render");
+                //Debug.startMethodTracing("render");
                 final Bitmap img = 
-                    Bitmap.createBitmap(map.getWidth(), map.getHeight(), Bitmap.Config.ARGB_8888);
+                    Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
                 Renderer r = new Renderer(new Canvas(img));
-                r.init(map);
+                r.init(view);
                 r.render();
                 
-                Debug.stopMethodTracing();
+                //Debug.stopMethodTracing();
                 mapView.update(img);
             }
             catch(Exception e) {

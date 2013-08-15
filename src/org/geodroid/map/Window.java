@@ -7,7 +7,7 @@ import android.graphics.Rect;
  *  
  * @author Justin Deoliveira, OpenGeo
  */
-class Viewport {
+class Window {
 
     /** 
      * canvas dimensions
