@@ -31,3 +31,13 @@ in the root of the project.
 And finally run Maven to build the library.
 
     mvn install
+
+*Note:* On OSX an error may occur during Maven execution that looks like:
+
+    [ERROR] com.sun.tools.javac.Main is not on the classpath.
+    [ERROR] Perhaps JAVA_HOME does not point to the JDK.
+
+In that case try executing Maven with the ``tools.jar`` profile.
+
+    mvn -P tools.jar install
+
