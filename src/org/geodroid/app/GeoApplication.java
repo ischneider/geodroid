@@ -1,15 +1,11 @@
 package org.geodroid.app;
 
-import java.io.File;
-
 import org.jeo.android.GeoDataRegistry;
 import org.jeo.data.Registry;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-
 import android.app.Activity;
 import android.app.Application;
+import android.app.Service;
 
 /**
  * Extension of android Application that manages global state for geo applications. 
@@ -21,43 +17,23 @@ import android.app.Application;
  */
 public class GeoApplication extends Application {
 
-    protected Registry dataRegistry;
+    public static GeoApplication get(Activity activity) {
+        return getOrFail(activity.getApplication());
+    }
 
-    public static Optional<GeoApplication> get(Activity activity) {
-        Application app = activity.getApplication();
+    public static GeoApplication get(Service service) {
+        return getOrFail(service.getApplication());
+    }
+    
+    static GeoApplication getOrFail(Application app) {
         if (app instanceof GeoApplication) {
-            return Optional.of((GeoApplication) app);
+            return (GeoApplication) app;
         }
-        return Optional.absent();
+        throw new IllegalStateException("Application object is not a GeoApplication");
     }
 
-    public static Registry getDataRegistry(Activity activity) {
-        return get(activity).transform(new Function<GeoApplication, Registry>() {
-            @Override
-            public Registry apply(GeoApplication app) {
-                return app.getDataRegistry();
-            }
-        }).or(new GeoDataRegistry());
-    }
-
-    public static void onStop(GeoFragment fragment) {
-        Optional<GeoApplication> app = get(fragment.getActivity());
-        if (app.isPresent()) {
-            // means we should clean up the fragments registry
-            fragment.getDataRegistry().close();
-        }
-    }
-
-    public Registry getDataRegistry() {
-        return dataRegistry;
-    }
-
-    @Override
-    public void onCreate() {
-        dataRegistry = createDataRegistry();
-    }
-
-    protected Registry createDataRegistry() {
+    public Registry createDataRegistry() {
         return new GeoDataRegistry();
     }
+
 }
