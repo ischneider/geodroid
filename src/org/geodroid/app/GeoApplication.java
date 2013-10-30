@@ -1,6 +1,5 @@
 package org.geodroid.app;
 
-import org.jeo.android.GeoDataRegistry;
 import org.jeo.data.Registry;
 
 import android.app.Activity;
