@@ -6,6 +6,7 @@ import java.io.IOException;
 import org.jeo.android.geopkg.GeoPackage;
 import org.jeo.android.mbtiles.MBTiles;
 import org.jeo.carto.CartoCSS;
+import org.jeo.csv.CSV;
 import org.jeo.data.DataRef;
 import org.jeo.data.DirectoryRegistry;
 import org.jeo.data.DriverRegistry;
@@ -33,8 +34,8 @@ import android.os.Environment;
 public class GeoDataRegistry implements Registry {
 
     static DriverRegistry DRIVERS = 
-        new StaticDriverRegistry(new GeoPackage(), new MBTiles(), new GeoJSON(), new Memory(), 
-            new CartoCSS());
+        new StaticDriverRegistry(new GeoPackage(), new MBTiles(), new GeoJSON(), new CSV(), 
+            new Memory(), new CartoCSS());
 
     Registry delegate;
 
